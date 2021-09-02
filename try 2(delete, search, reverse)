@@ -1,0 +1,175 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// 단순 연결 리스트 노드 구조체 정의
+typedef struct ListNode {
+	char data[4];
+	struct ListNode* link;
+}listNode;
+
+// head node 구조체 정의
+typedef struct {
+	listNode* head;
+}linkedList_h;
+
+// 공백 연결 리스트 생성 연산
+linkedList_h* createLinkedList_h(void) {
+	linkedList_h* L;
+	L = (linkedList_h*)malloc(sizeof(linkedList_h));	// linkedList_h 사이즈만큼 메모리 할당
+	L->head = NULL;		// L이라는 이름을 가진 head node에 NULL 값 삽입
+	return L;
+}
+
+// 연결 리스트 전체 메모리 해제 연산
+void freeLinkedList_h(linkedList_h* L) {
+	listNode* p;	// 순회 포인터 p 생성
+	while (L->head != NULL) {
+		p = L->head;	// 리스트 순회 포인터 p에 L이라는 head의 값(다음 주소 link) 저장
+		L->head = L->head->link;		// 가장 중요한 포인트 = p에 다음 노드 주소 건네주기
+		free(p);	// p 포인터가 가지고 있는 데이터 메모리 반환
+		p = NULL;	// p 포인터 값을 NULL 값으로
+	}
+}
+
+// 연결 리스트를 순서대로 출력
+void printList(linkedList_h* L) {
+	listNode* p;
+	printf("L = (");
+	p = L->head;
+	while (p != NULL) {
+		printf("%s", p->data);
+		p = p->link;
+		if (p != NULL) printf(", ");
+	}
+	printf(")\n");
+}
+
+// 첫 번째 노드로 삽입하는 연산
+void insertFirstNode(linkedList_h* L, char* x) {
+	listNode* newNode;
+	newNode = (listNode*)malloc(sizeof(listNode));
+	strcpy(newNode->data, x);
+	newNode->link = L->head;
+	L->head = newNode;					// newNode 자체가 newNode의 주소값(포인터이므로)
+}
+
+// 노드를 pre 뒤에 삽입하는 연산
+void insertMiddleNode(linkedList_h* L, listNode* pre, char* x) {
+	listNode* newNode;
+	newNode = (listNode*)malloc(sizeof(listNode));
+	strcpy(newNode->data, x);
+	if (L == NULL) {					// 공백 리스트인 경우
+		newNode->link = NULL;			// 새 노드를 첫 번째이자 마지막 노드로 연결
+		L->head = newNode;
+	}
+	else if (pre == NULL) {				// 삽입 위치를 지정하는 포인터 pre가 NULL인 경우
+		L->head = newNode;				// 새 노드를 첫 번째 노드로 삽입
+	}
+	else {
+		newNode->link = pre->link;
+		pre->link = newNode;
+	}
+}
+
+// 마지막 노드로 삽입하는 연산
+void insertLastNode(linkedList_h* L, char* x) {
+	listNode* newNode;
+	listNode* temp;
+	newNode = (listNode*)malloc(sizeof(listNode));
+	strcpy(newNode->data, x);
+	newNode->link = NULL;
+	if (L->head == NULL) {
+		L->head = newNode;
+		return;
+	}
+	temp = L->head;
+	while (temp->link != NULL)
+		temp = temp->link;
+	temp->link = newNode;
+}
+
+// 리스트에서 노드 P를 삭제하는 연산
+void deleteNode(linkedList_h* L, listNode* p) {
+	listNode* pre;
+	if (L->head == NULL) return;
+	if (L->head->link == NULL) {	// 리스트에 노드가 하나뿐이라면 = 헤드노드만 있다면
+		free(L->head);
+		L->head = NULL;
+		return;
+	}
+	else if (p == NULL) return;		// 삭제할 노드가 없다면 = 헤드노드 + 노드 구성
+	else {
+		pre = L->head;
+		while (pre->link != p) {
+			pre = pre->link;
+		}
+		pre->link = p->link;
+		free(p);					// 삭제 노드의 메모리 해제
+	}
+}
+
+// 리스트에서 x 노드를 탐색하는 연산
+listNode* searchNode(linkedList_h* L, char* x) {
+	listNode* temp;
+	temp = L->head;
+	while (temp != NULL) {
+		if (strcmp(temp->data, x)==0) return temp;		// 문자 비교, 탐색 시 strcmp 함수 이용! true or false
+		else temp = temp->link;
+	}
+	return temp;
+}
+
+// 리스트의 노드 순서를 역순으로 바꾸는 연산
+void reverse(linkedList_h* L) {
+	listNode* p;
+	listNode* q;
+	listNode* r;
+
+	p = L->head;
+	q = NULL;
+	r = NULL;
+
+	while (p != NULL) {
+		r = q;
+		q = p;
+		p = p->link;
+		q->link = r;
+	}
+	L->head = q;
+}
+
+int main(void) {
+	linkedList_h* L;
+	listNode* p;
+	L = createLinkedList_h();		// 공백 리스트 생성
+	printf("(1) 리스트에 [월], [수], [일] 노드 삽입하기! \n");
+	insertLastNode(L, "월"); insertLastNode(L, "수"); insertLastNode(L, "일");
+	printList(L); getchar();
+
+	printf("(2) 리스트에서 [수] 노드 탐색하기! \n");
+	p = searchNode(L, "수");
+	if (p == NULL) printf("찾는 데이터가 없습니다. \n");
+	else printf("[%s]를 찾았습니다. \n", p->data);
+	getchar();
+
+	printf("(3) 리스트에서 [수] 뒤에 [금] 노드 삽입하기! \n");
+	insertMiddleNode(L, p, "금");
+	printList(L); getchar();
+
+	printf("(4) 리스트에서 [일] 노드 삭제하기! \n");
+	p = searchNode(L, "일");
+	deleteNode(L, p);
+	printList(L); getchar();
+
+	printf("(5) 리스트 순서를 역순으로 바꾸기! \n");
+	reverse(L);
+	printList(L);
+
+	freeLinkedList_h(L);
+	getchar();
+
+	return 0;
+}
