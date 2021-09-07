@@ -1,0 +1,65 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+typedef struct ListNode {
+	float coef;
+	int expo;
+	struct ListNode* link;
+}ListNode;
+
+typedef struct {
+	ListNode* head;
+}ListHead;
+
+ListHead* createLinkedList(void) {
+	ListHead* L;
+	L = (ListHead*)malloc(sizeof(ListNode));
+	L->head = NULL;
+	return L;
+}
+
+void appendTerm(ListHead* L, float coef, int expo) {
+	ListNode* newNode;
+	ListNode* p;
+	newNode = (ListNode*)malloc(sizeof(ListNode));
+	newNode->coef = coef;
+	newNode->expo = expo;
+	newNode->link = NULL;
+
+	if (L->head == NULL) {
+		L->head = newNode;
+		return;
+	}
+	else {
+		p = L->head;
+		while (p->link != NULL)
+			p = p->link;
+		p->link = newNode;
+	}
+}
+
+void printPoly(ListHead* L) {
+	ListNode* p = L->head;
+	for (; p; p = p->link) {
+		printf("%3.0fx^%d", fabs(p->coef), p->expo);	// 함수 "fabs"는 실수의 절댓값화
+		if (p->link != NULL) {
+			if (p->link->coef < 0) printf(" -");		// p 다음에 오는 coef가 음수면 - 부호를
+			else printf(" +");							// 양수면 + 부호를
+		}
+	}
+}
+
+void main(void) {
+	ListHead* A;
+	A = createLinkedList();
+	appendTerm(A, 12, 101);
+	appendTerm(A, 8, 99);
+	appendTerm(A, -5, 98);
+	appendTerm(A, 72, 2);
+
+	printPoly(A);
+
+	getchar();
+}
